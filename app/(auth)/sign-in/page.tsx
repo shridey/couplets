@@ -41,12 +41,18 @@ export default function Page() {
               <Label htmlFor="email" className="block text-sm">
                 Email
               </Label>
-              <Input type="email" required name="email" id="email" />
+              <Input
+                type="email"
+                required
+                autoComplete="email"
+                name="email"
+                id="email"
+              />
             </div>
 
             <div className="space-y-0.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="pwd" className="text-sm">
+                <Label htmlFor="password" className="text-sm">
                   Password
                 </Label>
                 <Button asChild variant="link" size="sm">
@@ -61,8 +67,8 @@ export default function Page() {
               <Input
                 type="password"
                 required
-                name="pwd"
-                id="pwd"
+                name="password"
+                id="password"
                 className="input sz-md variant-mixed"
               />
             </div>
