@@ -24,7 +24,12 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  username        String?
+  displayUsername String?
+  bio             String?
+
   @@unique([email])
+  @@unique([username])
   @@map("user")
 }
 

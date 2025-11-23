@@ -11,13 +11,27 @@ export async function signIn(
   prevState: State | undefined,
   formData: FormData
 ): Promise<State | undefined> {
-  const { email, password } = Object.fromEntries(formData.entries()) as {
+  const { email, username, password } = Object.fromEntries(
+    formData.entries()
+  ) as {
     email: string;
+    username: string;
     password: string;
   };
 
   try {
-    console.log("🔧 Sign-in attempt:", { email });
+    if (username && username.trim() !== "") {
+      const resultByUsername = await auth.api.signInUsername({
+        body: {
+          username: username,
+          password: password,
+        },
+      });
+      if (resultByUsername) {
+        redirect("/home");
+      }
+      return undefined;
+    }
 
     const result = await auth.api.signInEmail({
       body: {
@@ -26,22 +40,19 @@ export async function signIn(
       },
     });
 
-    console.log("✅ Sign-in successful:", result);
-
     if (result) {
-      redirect("/home"); // This throws a redirect exception
+      redirect("/home");
     }
 
-    return undefined; // This line won't be reached due to redirect
+    return undefined;
   } catch (error) {
     if (error instanceof APIError) {
       console.error("❌ Auth API error:", error.message);
       return { errorMessage: error.message };
     }
 
-    // Check if it's a redirect exception
     if (error && typeof error === "object" && "digest" in error) {
-      throw error; // Re-throw redirect exceptions
+      throw error;
     }
 
     console.error("❌ Unexpected error:", error);
@@ -54,45 +65,36 @@ export async function signUp(
   formData: FormData
 ): Promise<State | undefined> {
   const formDataObj = Object.fromEntries(formData.entries());
-  const firstName = formDataObj.firstname as string;
-  const lastName = formDataObj.lastname as string;
+  const fullName = formDataObj.fullName as string;
   const email = formDataObj.email as string;
+  const username = formDataObj.username as string;
   const password = formDataObj.password as string;
-  const confirmPassword = formDataObj["confirm-password"] as string;
 
-  console.log("🔧 Sign-up attempt:", { email, firstName, lastName });
-
-  if (password !== confirmPassword) {
-    return { errorMessage: "Passwords do not match" };
-  }
+  console.log(fullName, email, username, password);
 
   try {
-    console.log("📝 Calling Better Auth...");
-
     const result = await auth.api.signUpEmail({
       body: {
-        name: `${firstName} ${lastName}`.trim(),
+        name: fullName.trim(),
         email: email,
         password: password,
+        username: username.trim(),
       },
     });
 
-    console.log("✅ Sign-up successful:", result);
-
     if (result) {
-      redirect("/home"); // This throws a redirect exception
+      redirect("/home");
     }
 
-    return undefined; // This line won't be reached due to redirect
+    return undefined;
   } catch (error) {
     if (error instanceof APIError) {
       console.error("❌ Auth API error:", error.message);
       return { errorMessage: error.message };
     }
 
-    // Check if it's a redirect exception
     if (error && typeof error === "object" && "digest" in error) {
-      throw error; // Re-throw redirect exceptions
+      throw error;
     }
 
     console.error("❌ Unexpected error:", error);
