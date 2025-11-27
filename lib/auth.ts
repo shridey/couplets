@@ -16,20 +16,20 @@ export const auth = betterAuth({
     autoSignIn: true,
     // requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendEmail(
-        user.email,
-        "Reset your password",
-        `Click the link to reset your password: ${url}`
-      );
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password",
+        text: `Click the link to reset your password: ${url}`,
+      });
     },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail(
-        user.email,
-        "Verify your email address",
-        `Click the link to verify your email address: ${url}`
-      );
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email address",
+        text: `Click the link to verify your email address: ${url}`,
+      });
     },
     // sendOnSignIn: true,
     // sendOnSignUp: true,
