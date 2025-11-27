@@ -99,6 +99,7 @@ export function OTPForm({ className, ...props }: React.ComponentProps<"div">) {
               required
               containerClassName="gap-4"
               disabled={pending}
+              suppressHydrationWarning
             >
               <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:h-16 *:data-[slot=input-otp-slot]:w-12 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border *:data-[slot=input-otp-slot]:text-xl">
                 <InputOTPSlot index={0} />
