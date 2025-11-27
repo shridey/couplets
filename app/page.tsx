@@ -7,7 +7,11 @@ export default async function Page() {
     headers: await headers(),
   });
   if (session) {
-    redirect("/home");
+    if (session.user.username) {
+      redirect("/home");
+    } else {
+      redirect("/sign-up/complete-profile");
+    }
   } else {
     redirect("/sign-in");
   }

@@ -13,14 +13,19 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
-    autoSignIn: true,
     // requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your password",
-        text: `Click the link to reset your password: ${url}`,
-      });
+      try {
+        console.log("Attempting to send email");
+
+        await sendEmail({
+          to: user.email,
+          subject: "Reset your password",
+          text: `Click the link to reset your password: ${url}`,
+        });
+      } catch (error) {
+        console.error(error);
+      }
     },
   },
   emailVerification: {
@@ -44,6 +49,7 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
+      prompt: "select_account",
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
@@ -57,5 +63,10 @@ export const auth = betterAuth({
       enabled: true,
     },
   },
-  plugins: [nextCookies(), username()],
+  plugins: [
+    nextCookies(),
+    username({
+      minUsernameLength: 3,
+    }),
+  ],
 });

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { SignInWithGoogleButton } from "./sign-in-with-google-button";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -187,10 +188,7 @@ export const SignInForm = () => {
           </div>
 
           <div className="grid grid-cols-1">
-            <Button type="button" variant="outline">
-              <Icons.google />
-              <span>Google</span>
-            </Button>
+            <SignInWithGoogleButton />
           </div>
         </div>
 
