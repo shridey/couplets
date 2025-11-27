@@ -12,6 +12,8 @@ export const transporter = nodemailer.createTransport({
   pool: true,
   maxConnections: 1,
   maxMessages: 5,
+  connectionTimeout: 10000,
+  socketTimeout: 15000,
 });
 
 // Verify transporter configuration
