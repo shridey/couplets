@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { redirect, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -15,14 +15,8 @@ export const ResetPasswordForm = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pending, setPending] = useState(false);
-  const token = searchParams.get("token");
-
-  useEffect(() => {
-    if (!token) {
-      toast.error("Invalid or missing token.");
-      redirect("/sign-in/forgot-password");
-    }
-  }, [token]);
+  const otp = searchParams.get("otp");
+  const email = searchParams.get("email");
 
   const handleReset = () => {
     setPassword("");
@@ -32,17 +26,16 @@ export const ResetPasswordForm = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    console.log("Token:", token);
-
     if (password !== confirmPassword) {
       toast.error("Passwords do not match.");
       return;
     }
 
-    await authClient.resetPassword(
+    await authClient.emailOtp.resetPassword(
       {
-        newPassword: password,
-        token: token as string,
+        email: email!,
+        otp: otp!,
+        password: password,
       },
       {
         onRequest: () => {

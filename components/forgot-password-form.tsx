@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Icons } from "./icons";
 import { Label } from "./ui/label";
@@ -11,41 +12,31 @@ import { toast } from "sonner";
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
-  const [status, setStatus] = useState<"none" | "success">("none");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setPending(true);
 
-    try {
-      const response = await fetch("/api/auth/check-and-send-reset", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+    const response = await fetch("/api/auth/check-and-send-reset", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus("success");
-        toast.success("Password reset email sent successfully");
-      } else {
-        if (response.status === 404) {
-          toast.error("Account not found");
-        } else {
-          toast.error(data.error || "Failed to send reset email");
-        }
-      }
-    } catch {
-      toast.error("An error occurred. Please try again.");
-    } finally {
-      setPending(false);
+    if (response.status === 404) {
+      toast.error("Account not found");
+    } else if (response.ok) {
+      redirect(
+        `/sign-in/forgot-password/enter-otp?email=${encodeURIComponent(email)}`
+      );
+    } else {
+      toast.error("Could not send the OTP");
     }
   };
 
-  return status !== "success" ? (
+  return (
     <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
       <form
         onSubmit={handleSubmit}
@@ -87,21 +78,11 @@ export const ForgotPasswordForm = () => {
               aria-disabled={pending}
             >
               {pending && <Spinner />}
-              Send Reset Link
+              Send Email with OTP
             </Button>
           </div>
         </div>
       </form>
     </section>
-  ) : (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Check Your Email</h1>
-      <p className="text-lg">
-        A password reset link has been sent to your email address.
-      </p>
-      <Button asChild className="mt-6">
-        <Link href="/sign-in">Return to Sign In</Link>
-      </Button>
-    </div>
   );
 };

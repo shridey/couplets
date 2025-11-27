@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { username } from "better-auth/plugins";
+import { emailOTP, username } from "better-auth/plugins";
 import { sendEmail } from "./email";
 import prisma from "./prisma";
 
@@ -13,31 +13,6 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
-    // requireEmailVerification: true,
-    sendResetPassword: async ({ user, url }) => {
-      try {
-        console.log("Attempting to send email");
-
-        await sendEmail({
-          to: user.email,
-          subject: "Reset your password",
-          text: `Click the link to reset your password: ${url}`,
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  },
-  emailVerification: {
-    sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Verify your email address",
-        text: `Click the link to verify your email address: ${url}`,
-      });
-    },
-    // sendOnSignIn: true,
-    // sendOnSignUp: true,
   },
   user: {
     additionalFields: {
@@ -56,7 +31,7 @@ export const auth = betterAuth({
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // update every 24 hours
+    updateAge: 60 * 60 * 24, // 24 hours
   },
   account: {
     accountLinking: {
@@ -67,6 +42,25 @@ export const auth = betterAuth({
     nextCookies(),
     username({
       minUsernameLength: 3,
+    }),
+    emailOTP({
+      async sendVerificationOTP({ email, otp, type }) {
+        if (type === "email-verification") {
+          await sendEmail({
+            to: email,
+            subject: "Verify your email address",
+            text: `Your email verification code is: ${otp}. This code will expire in 10 minutes.`,
+          });
+        } else if (type === "forget-password") {
+          await sendEmail({
+            to: email,
+            subject: "Forget password",
+            text: `Your forget password code is: ${otp}. This code will expire in 10 minutes.`,
+          });
+        }
+      },
+      otpLength: 6,
+      expiresIn: 10 * 60, // 10 minutes
     }),
   ],
 });

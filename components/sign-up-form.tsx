@@ -37,17 +37,14 @@ export const SignUpForm = () => {
       },
       {
         onRequest: () => {
-          //show loading
           setPending(true);
           handleReset();
         },
         onSuccess: () => {
-          //redirect to the dashboard or sign in page
           setPending(false);
           redirect("/home");
         },
         onError: (ctx) => {
-          // display the error message
           setPending(false);
           toast(ctx.error.message);
         },

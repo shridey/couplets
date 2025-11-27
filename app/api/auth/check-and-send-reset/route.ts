@@ -20,20 +20,17 @@ export async function POST(request: NextRequest) {
     }
 
     // If user exists, use Better Auth to send reset email
-    const result = await authClient.requestPasswordReset({
-      email,
-      redirectTo: "/sign-in/reset-password",
-    });
+    const result = await authClient.forgetPassword.emailOtp({ email });
 
     if (!result) {
       return NextResponse.json(
-        { error: "Failed to send reset email" },
+        { error: "Failed to send reset code" },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
-      message: "Password reset email sent successfully",
+      message: "Password reset code sent successfully",
     });
   } catch (error) {
     console.error("Error in check-and-send-reset:", error);
