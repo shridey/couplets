@@ -1,4 +1,10 @@
-import { HeartPulse, LucideProps } from "lucide-react";
+import {
+  HeartPulse,
+  LucideProps,
+  HomeIcon,
+  SearchIcon,
+  UserIcon,
+} from "lucide-react";
 
 export const Icons = {
   logo: HeartPulse,
@@ -28,4 +34,7 @@ export const Icons = {
       ></path>
     </svg>
   ),
+  home: HomeIcon,
+  search: SearchIcon,
+  user: UserIcon,
 };

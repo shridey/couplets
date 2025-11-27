@@ -6,39 +6,46 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
-import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
-  const [status, setStatus] = useState<"none" | "success" | "failure">("none");
+  const [status, setStatus] = useState<"none" | "success">("none");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await authClient.requestPasswordReset(
-      {
-        email: email,
-        redirectTo: "/sign-in/reset-password",
-      },
-      {
-        onRequest: () => {
-          setPending(true);
+    setPending(true);
+
+    try {
+      const response = await fetch("/api/auth/check-and-send-reset", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        onSuccess: () => {
-          setPending(false);
-          setStatus("success");
-        },
-        onError: (ctx) => {
-          setPending(false);
-          setStatus("failure");
-          toast.error(ctx.error.message);
-        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus("success");
+        toast.success("Password reset email sent successfully");
+      } else {
+        if (response.status === 404) {
+          toast.error("Account not found");
+        } else {
+          toast.error(data.error || "Failed to send reset email");
+        }
       }
-    );
+    } catch {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setPending(false);
+    }
   };
 
-  return status === "none" ? (
+  return status !== "success" ? (
     <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent">
       <form
         onSubmit={handleSubmit}
@@ -86,26 +93,14 @@ export const ForgotPasswordForm = () => {
         </div>
       </form>
     </section>
-  ) : status === "success" ? (
+  ) : (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Check Your Email</h1>
       <p className="text-lg">
-        If an account with the provided email exists, a password reset link has
-        been sent. Please check your inbox.
+        A password reset link has been sent to your email address.
       </p>
       <Button asChild className="mt-6">
         <Link href="/sign-in">Return to Sign In</Link>
-      </Button>
-    </div>
-  ) : (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Error</h1>
-      <p className="text-lg">
-        An error occurred while attempting to send the password reset link.
-        Please try again later.
-      </p>
-      <Button asChild className="mt-6">
-        <Link href="/sign-in/forgot-password">Try Again</Link>
       </Button>
     </div>
   );
