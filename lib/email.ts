@@ -1,17 +1,25 @@
-// lib/email.ts
 import nodemailer from "nodemailer";
 
 // Create transporter with enhanced configuration for Vercel
+// Switching to port 587 with STARTTLS, which is often more stable
+// on serverless platforms than port 465, which requires full SSL/TLS negotiation from the start.
 export const transporter = nodemailer.createTransport({
-  // **Change the service property to explicit host/port settings**
-  host: "smtp.gmail.com", // Explicit Gmail SMTP Host
-  port: 465, // Port 465 is for SMTPS (Secure SMTP)
-  secure: true, // MUST be true for port 465 (SSL/TLS)
+  host: "smtp.gmail.com",
+  port: 587, // Port 587 for STARTTLS
+  secure: false, // Must be false for port 587 (uses STARTTLS)
+  requireTLS: true, // Explicitly requires STARTTLS
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Your App Password
+    pass: process.env.EMAIL_PASS,
   },
-  // Keep the Vercel-optimized settings
+  // Added a specific TLS option to help with connection stability
+  // Note: rejectUnauthorized: false is typically for self-signed certs,
+  // but sometimes helps with proxy/environment issues. Use with caution
+  // but it's often a necessary diagnostic step in these scenarios.
+  tls: {
+    rejectUnauthorized: false,
+  },
+  // Vercel-optimized settings
   pool: true,
   maxConnections: 1,
   maxMessages: 5,
@@ -22,6 +30,7 @@ export const transporter = nodemailer.createTransport({
 // Verify transporter configuration
 transporter.verify(function (error) {
   if (error) {
+    // Logging the full error object is crucial for diagnosis
     console.error("Transporter verification failed:", error);
   } else {
     console.log("Transporter is ready to send emails");
@@ -68,6 +77,7 @@ export const sendEmail = async ({
 
     console.log("📤 Sending email via Gmail...");
 
+    // The await keyword here is essential for serverless functions
     const result = await transporter.sendMail(mailOptions);
 
     console.log("✅ Email sent successfully!");
@@ -77,6 +87,9 @@ export const sendEmail = async ({
     return result;
   } catch (error) {
     console.error("❌ Email sending failed:");
+    // Print the full error object to get the SMTP error code (e.g., ETIMEDOUT, EAUTH)
     console.error("🔴 Error:", error);
+    // Re-throwing the error is good practice for the calling API handler to catch and respond with 500
+    throw error;
   }
 };
