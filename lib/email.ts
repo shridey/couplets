@@ -1,15 +1,10 @@
 import nodemailer from "nodemailer";
 
 export const transporter = nodemailer.createTransport({
-  port: 465,
-  host: "smtp.gmail.com",
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER as string,
     pass: process.env.EMAIL_PASS as string,
-  },
-  secure: true,
-  tls: {
-    rejectUnauthorized: false,
   },
 });
 
@@ -24,11 +19,23 @@ export const sendEmail = async ({
   html?: string;
   text?: string;
 }) => {
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to,
-    subject,
-    html,
-    text,
+  await new Promise((resolve, reject) => {
+    transporter.sendMail(
+      {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        html,
+        text,
+      },
+      (err, info) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          resolve(info);
+        }
+      }
+    );
   });
 };
