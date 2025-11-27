@@ -3,12 +3,15 @@ import nodemailer from "nodemailer";
 
 // Create transporter with enhanced configuration for Vercel
 export const transporter = nodemailer.createTransport({
-  service: "gmail",
+  // **Change the service property to explicit host/port settings**
+  host: "smtp.gmail.com", // Explicit Gmail SMTP Host
+  port: 465, // Port 465 is for SMTPS (Secure SMTP)
+  secure: true, // MUST be true for port 465 (SSL/TLS)
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS, // Your App Password
   },
-  // Additional settings for better Vercel compatibility
+  // Keep the Vercel-optimized settings
   pool: true,
   maxConnections: 1,
   maxMessages: 5,
