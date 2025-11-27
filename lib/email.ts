@@ -1,43 +1,42 @@
-"use server";
 import nodemailer from "nodemailer";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
 
-const user = process.env.EMAIL_USER;
-const pass = process.env.EMAIL_PASS;
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smpt.gmail.com",
+const smtpConfig: SMTPTransport.Options = {
+  host: process.env.SMTP_HOST as string,
   port: 587,
-  secure: true,
+  secure: false,
+  requireTLS: true,
   auth: {
-    user,
-    pass,
+    user: process.env.EMAIL_USER as string,
+    pass: process.env.EMAIL_PASS as string,
   },
-});
+};
 
-export async function sendEmail({
+export const transporter = nodemailer.createTransport(smtpConfig);
+
+export const sendEmail = async ({
   to,
   subject,
-  text,
   html,
+  text,
 }: {
   to: string;
   subject: string;
-  text: string;
   html?: string;
-}) {
+  text?: string;
+}) => {
   try {
     await transporter.verify();
   } catch (error) {
-    console.error("Something Went Wrong", error);
-    return;
+    console.error("Transporter Verification Failed:", error);
+    throw new Error("Failed to connect to email server.");
   }
-  const info = await transporter.sendMail({
-    from: user,
-    to: to,
-    subject: subject,
-    text: text,
-    html: html,
+
+  await transporter.sendMail({
+    from: { name: "Couplets", address: process.env.EMAIL_USER as string },
+    to,
+    subject,
+    html,
+    text,
   });
-  return info;
-}
+};
